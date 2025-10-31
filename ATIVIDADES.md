@@ -384,5 +384,289 @@ BigDecimal calcularTotalGastoByCliente(@Param("clienteId") Long clienteId);
 
 ---
 
+## Atividade 9: Controllers REST
+
+### Objetivo
+Criar endpoints REST para exposição das funcionalidades do sistema de delivery, implementando CRUD completo para todas as entidades com validações adequadas.
+
+### Entregáveis:
+
+#### 1. DTOs (Data Transfer Objects) Criados
+
+**ClienteDTO** ([ClienteDTO.java](src/main/java/com/deliverytech/delivery_api/dto/ClienteDTO.java)):
+- Record moderno do Java 21
+- Validações com Bean Validation:
+  - `@NotBlank` para campos obrigatórios
+  - `@Email` para validação de email
+  - `@Size` para limites de tamanho
+
+**RestauranteDTO** ([RestauranteDTO.java](src/main/java/com/deliverytech/delivery_api/dto/RestauranteDTO.java)):
+- Validações específicas:
+  - `@DecimalMin` e `@DecimalMax` para avaliação (0.0 a 5.0)
+  - Campos obrigatórios com `@NotBlank`
+
+**ProdutoDTO** ([ProdutoDTO.java](src/main/java/com/deliverytech/delivery_api/dto/ProdutoDTO.java)):
+- Validações financeiras:
+  - `@DecimalMin` para preço mínimo
+  - `@NotNull` para campos obrigatórios
+  - Referência ao restaurante por ID
+
+**PedidoDTO** ([PedidoDTO.java](src/main/java/com/deliverytech/delivery_api/dto/PedidoDTO.java)):
+- Validações de negócio:
+  - Valor total obrigatório e maior que zero
+  - Endereço de entrega obrigatório
+  - Enum para status do pedido
+
+#### 2. Services Implementados
+
+**ClienteService** ([ClienteService.java](src/main/java/com/deliverytech/delivery_api/service/ClienteService.java)):
+- ✅ Validação de email único
+- ✅ Operações CRUD completas
+- ✅ Busca por nome e status ativo
+- ✅ Tratamento de exceções
+
+**RestauranteService** ([RestauranteService.java](src/main/java/com/deliverytech/delivery_api/service/RestauranteService.java)):
+- ✅ CRUD completo
+- ✅ Busca por categoria
+- ✅ Busca por nome
+- ✅ Ordenação por avaliação
+
+**ProdutoService** ([ProdutoService.java](src/main/java/com/deliverytech/delivery_api/service/ProdutoService.java)):
+- ✅ Associação com restaurante
+- ✅ Busca por restaurante
+- ✅ Filtro de disponibilidade
+- ✅ Busca por categoria
+
+**PedidoService** ([PedidoService.java](src/main/java/com/deliverytech/delivery_api/service/PedidoService.java)):
+- ✅ Criação com validações de cliente e restaurante
+- ✅ Atualização de status com regras de negócio
+- ✅ Registro automático de data de entrega
+- ✅ Cancelamento com validações
+
+#### 3. Controllers REST Implementados
+
+**ClienteController** ([ClienteController.java](src/main/java/com/deliverytech/delivery_api/controller/ClienteController.java)):
+
+| Método | Endpoint | Descrição | Status HTTP |
+|--------|----------|-----------|-------------|
+| POST | `/clientes` | Criar novo cliente | 201 Created |
+| GET | `/clientes` | Listar todos os clientes | 200 OK |
+| GET | `/clientes?nome=X` | Buscar por nome | 200 OK |
+| GET | `/clientes?ativo=true` | Buscar ativos | 200 OK |
+| GET | `/clientes/{id}` | Buscar por ID | 200 OK |
+| PUT | `/clientes/{id}` | Atualizar cliente | 200 OK |
+| DELETE | `/clientes/{id}` | Deletar cliente | 204 No Content |
+
+**RestauranteController** ([RestauranteController.java](src/main/java/com/deliverytech/delivery_api/controller/RestauranteController.java)):
+
+| Método | Endpoint | Descrição | Status HTTP |
+|--------|----------|-----------|-------------|
+| POST | `/restaurantes` | Criar novo restaurante | 201 Created |
+| GET | `/restaurantes` | Listar todos | 200 OK |
+| GET | `/restaurantes?categoria=X` | Buscar por categoria | 200 OK |
+| GET | `/restaurantes?nome=X` | Buscar por nome | 200 OK |
+| GET | `/restaurantes?ordenarPorAvaliacao=true` | Ordenar por avaliação | 200 OK |
+| GET | `/restaurantes/{id}` | Buscar por ID | 200 OK |
+| GET | `/restaurantes/categoria/{categoria}` | Buscar por categoria (path) | 200 OK |
+| PUT | `/restaurantes/{id}` | Atualizar restaurante | 200 OK |
+| DELETE | `/restaurantes/{id}` | Deletar restaurante | 204 No Content |
+
+**ProdutoController** ([ProdutoController.java](src/main/java/com/deliverytech/delivery_api/controller/ProdutoController.java)):
+
+| Método | Endpoint | Descrição | Status HTTP |
+|--------|----------|-----------|-------------|
+| POST | `/produtos` | Criar novo produto | 201 Created |
+| GET | `/produtos` | Listar todos | 200 OK |
+| GET | `/produtos?restauranteId=X` | Buscar por restaurante | 200 OK |
+| GET | `/produtos?categoria=X` | Buscar por categoria | 200 OK |
+| GET | `/produtos?restauranteId=X&disponivel=true` | Buscar disponíveis | 200 OK |
+| GET | `/produtos/{id}` | Buscar por ID | 200 OK |
+| GET | `/produtos/restaurante/{id}` | Buscar por restaurante (path) | 200 OK |
+| PUT | `/produtos/{id}` | Atualizar produto | 200 OK |
+| DELETE | `/produtos/{id}` | Deletar produto | 204 No Content |
+
+**PedidoController** ([PedidoController.java](src/main/java/com/deliverytech/delivery_api/controller/PedidoController.java)):
+
+| Método | Endpoint | Descrição | Status HTTP |
+|--------|----------|-----------|-------------|
+| POST | `/pedidos` | Criar novo pedido | 201 Created |
+| GET | `/pedidos` | Listar todos | 200 OK |
+| GET | `/pedidos?clienteId=X` | Buscar por cliente | 200 OK |
+| GET | `/pedidos?restauranteId=X` | Buscar por restaurante | 200 OK |
+| GET | `/pedidos?status=X` | Buscar por status | 200 OK |
+| GET | `/pedidos?pendentes=true` | Buscar pendentes | 200 OK |
+| GET | `/pedidos/{id}` | Buscar por ID | 200 OK |
+| GET | `/pedidos/cliente/{clienteId}` | Buscar por cliente (path) | 200 OK |
+| PATCH | `/pedidos/{id}/status?novoStatus=X` | Atualizar status | 200 OK |
+| PATCH | `/pedidos/{id}/cancelar` | Cancelar pedido | 204 No Content |
+
+#### 4. Validações Implementadas
+
+**Bean Validation (Jakarta Validation):**
+- ✅ `@NotBlank` - Campos de texto obrigatórios
+- ✅ `@NotNull` - Campos obrigatórios
+- ✅ `@Email` - Validação de formato de email
+- ✅ `@Size` - Tamanho mínimo e máximo de strings
+- ✅ `@DecimalMin` / `@DecimalMax` - Valores numéricos
+- ✅ `@Valid` - Ativação de validação em cascade
+
+**Validações de Negócio:**
+- Email único para clientes
+- Status de pedido (enum com estados válidos)
+- Cancelamento apenas de pedidos não entregues
+- Associação válida entre produtos e restaurantes
+- Preços sempre maiores que zero
+
+#### 5. Tratamento de Erros
+
+**GlobalExceptionHandler** ([GlobalExceptionHandler.java](src/main/java/com/deliverytech/delivery_api/exception/GlobalExceptionHandler.java)):
+
+| Exceção | Status HTTP | Cenário |
+|---------|-------------|---------|
+| `MethodArgumentNotValidException` | 400 Bad Request | Erro de validação (@Valid) |
+| `IllegalArgumentException` | 404 Not Found | Recurso não encontrado |
+| `IllegalStateException` | 400 Bad Request | Operação inválida |
+| `Exception` | 500 Internal Server Error | Erro genérico |
+
+**Formato de Resposta de Erro:**
+```json
+{
+  "timestamp": "2025-10-30T23:50:00",
+  "status": 400,
+  "message": "Erro de validação",
+  "errors": {
+    "email": "Email deve ser válido",
+    "nome": "Nome é obrigatório"
+  }
+}
+```
+
+#### 6. Scripts de Teste
+
+**test-endpoints.sh** ([test-endpoints.sh](test-endpoints.sh)) - Para Linux/Mac:
+- 37 testes completos de todos os endpoints
+- Criação, listagem, busca, atualização e deleção
+- Testes de validação
+- Testes de tratamento de erros
+- Saída colorida com resumo
+
+**test-endpoints.ps1** ([test-endpoints.ps1](test-endpoints.ps1)) - Para Windows PowerShell:
+- Versão adaptada para Windows
+- 13 testes principais cobrindo todos os controllers
+- Saída formatada com cores
+
+**Como Executar os Testes:**
+
+Linux/Mac:
+```bash
+# Iniciar a aplicação
+./mvnw spring-boot:run
+
+# Em outro terminal
+chmod +x test-endpoints.sh
+./test-endpoints.sh
+```
+
+Windows PowerShell:
+```powershell
+# Iniciar a aplicação
+.\mvnw.cmd spring-boot:run
+
+# Em outro terminal
+.\test-endpoints.ps1
+```
+
+#### 7. Exemplos de Uso
+
+**Criar Cliente:**
+```bash
+curl -X POST http://localhost:8080/clientes \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nome": "João Silva",
+    "email": "joao@email.com",
+    "telefone": "11999999999",
+    "endereco": "Rua A, 123",
+    "ativo": true
+  }'
+```
+
+**Criar Restaurante:**
+```bash
+curl -X POST http://localhost:8080/restaurantes \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nome": "Pizza Mania",
+    "categoria": "Italiana",
+    "endereco": "Av. Principal, 100",
+    "telefone": "11991111111",
+    "avaliacao": 4.5,
+    "ativo": true
+  }'
+```
+
+**Criar Produto:**
+```bash
+curl -X POST http://localhost:8080/produtos \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nome": "Pizza Margherita",
+    "descricao": "Pizza tradicional",
+    "preco": 45.00,
+    "categoria": "Pizza",
+    "disponivel": true,
+    "restauranteId": 1
+  }'
+```
+
+**Criar Pedido:**
+```bash
+curl -X POST http://localhost:8080/pedidos \
+  -H "Content-Type: application/json" \
+  -d '{
+    "clienteId": 1,
+    "restauranteId": 1,
+    "valorTotal": 55.00,
+    "observacoes": "Sem cebola",
+    "enderecoEntrega": "Rua A, 123"
+  }'
+```
+
+**Atualizar Status do Pedido:**
+```bash
+curl -X PATCH "http://localhost:8080/pedidos/1/status?novoStatus=CONFIRMADO"
+```
+
+### Recursos Modernos do Java 21 Utilizados
+
+1. **Records** - DTOs imutáveis e concisos
+2. **Pattern Matching** - Switch expressions modernas
+3. **Text Blocks** - Para strings multi-linha (quando necessário)
+4. **Var** - Inferência de tipos para código mais limpo
+
+### Tecnologias e Padrões
+
+- **Spring Boot 3.5.7** - Framework web
+- **Spring Web** - REST controllers
+- **Spring Validation** - Bean Validation (Jakarta)
+- **@RestController** - Controllers REST
+- **@Valid** - Validação automática
+- **@RestControllerAdvice** - Tratamento global de exceções
+- **DTOs** - Separação de camadas
+- **Service Layer** - Lógica de negócio
+- **Dependency Injection** - Injeção via construtor
+- **@Transactional** - Gerenciamento de transações
+
+### Resultado da Compilação
+
+```
+[INFO] BUILD SUCCESS
+[INFO] Total time:  2.504 s
+```
+
+✅ **Projeto compilado com sucesso!**
+
+---
+
 **Data de Entrega:** 30 de Outubro de 2025
 **Versão:** 1.0.0
